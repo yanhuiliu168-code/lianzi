@@ -145,27 +145,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const rowsCount = 12;
         const colsCount = 12; // 180mm / 15mm = 12格
 
-        // 前3行：笔顺拆解
-        for (let r = 0; r < 3; r++) {
+        // 计算笔顺拆解需要的总格数（1个实心字 + 所有笔画拆解）
+        const breakdownTotalCells = 1 + strokeTotal;
+        // 计算笔顺拆解需要占用多少行（向上取整）
+        const breakdownRowsNeeded = Math.ceil(breakdownTotalCells / colsCount);
+        // 限制最多占用所有行，通常不会超过3行
+        const actualBreakdownRows = Math.min(breakdownRowsNeeded, rowsCount);
+
+        // 记录当前渲染到第几个笔画
+        let currentStrokeIndex = 0;
+        let isSolidCharRendered = false;
+
+        // 渲染笔顺拆解行
+        for (let r = 0; r < actualBreakdownRows; r++) {
             const row = document.createElement('div');
             row.className = 'grid-row';
-            // 第一格：完整实心字
-            row.appendChild(createGridCell(char, 'solid', strokes, strokeTotal - 1));
-            // 后续格子：逐步增加笔画
-            for (let i = 0; i < strokeTotal; i++) {
-                if (i + 1 < colsCount) {
-                    row.appendChild(createGridCell(char, 'stroke-breakdown', strokes, i));
+            
+            for (let c = 0; c < colsCount; c++) {
+                if (!isSolidCharRendered) {
+                    // 第一格：完整实心字
+                    row.appendChild(createGridCell(char, 'solid', strokes, strokeTotal - 1));
+                    isSolidCharRendered = true;
+                } else if (currentStrokeIndex < strokeTotal) {
+                    // 后续格子：逐步增加笔画
+                    row.appendChild(createGridCell(char, 'stroke-breakdown', strokes, currentStrokeIndex));
+                    currentStrokeIndex++;
+                } else {
+                    // 补充空白格
+                    row.appendChild(createGridCell('', 'empty'));
                 }
-            }
-            // 补充空白格
-            for (let i = strokeTotal + 1; i < colsCount; i++) {
-                row.appendChild(createGridCell('', 'empty'));
             }
             worksheetBody.appendChild(row);
         }
 
-        // 第4-9行（共6行）：描红
-        for (let r = 3; r < 9; r++) {
+        // 计算剩余行数
+        const remainingRows = rowsCount - actualBreakdownRows;
+        // 将剩余行数分配给“描红行”和“留白行”
+        // 原逻辑是 6行描红，3行留白（比例大概 2:1）
+        // 这里动态分配：剩余行数的前 2/3 给描红，后 1/3 留白
+        const traceRowsNeeded = Math.ceil(remainingRows * (6 / 9));
+        const emptyRowsNeeded = remainingRows - traceRowsNeeded;
+
+        // 渲染描红行
+        for (let r = 0; r < traceRowsNeeded; r++) {
             const row = document.createElement('div');
             row.className = 'grid-row';
             for (let j = 0; j < colsCount; j++) {
@@ -174,8 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             worksheetBody.appendChild(row);
         }
 
-        // 第10-12行（共3行）：留白
-        for (let r = 9; r < 12; r++) {
+        // 渲染留白行
+        for (let r = 0; r < emptyRowsNeeded; r++) {
             const row = document.createElement('div');
             row.className = 'grid-row';
             for (let j = 0; j < colsCount; j++) {

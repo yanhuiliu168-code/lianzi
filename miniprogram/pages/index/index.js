@@ -206,6 +206,17 @@ Page({
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
+        // 计算排版
+        const breakdownTotalCells = 1 + strokeTotal;
+        const breakdownRowsNeeded = Math.ceil(breakdownTotalCells / colsCount);
+        const actualBreakdownRows = Math.min(breakdownRowsNeeded, rowsCount);
+        
+        const remainingRows = rowsCount - actualBreakdownRows;
+        const traceRowsNeeded = Math.ceil(remainingRows * (6 / 9));
+        
+        let currentStrokeIndex = 0;
+        let isSolidCharRendered = false;
+
         for (let r = 0; r < rowsCount; r++) {
           for (let c = 0; c < colsCount; c++) {
             const x = startX + c * cellSize;
@@ -226,9 +237,9 @@ Page({
             ctx.setLineDash([]); // 恢复实线
             
             // 绘制文字
-            if (r < 3) {
-              // 前3行：笔顺拆解
-              if (c === 0) {
+            if (r < actualBreakdownRows) {
+              // 笔顺拆解区
+              if (!isSolidCharRendered) {
                 // 第一格：完整实心字
                 if (strokeTotal > 0 && canvas.createPath2D) {
                   this.drawStrokesPath(canvas, ctx, strokes, strokeTotal - 1, x, y, cellSize, '#000000');
@@ -236,17 +247,19 @@ Page({
                   ctx.fillStyle = '#000000';
                   ctx.fillText(char, x + cellSize / 2, y + cellSize / 2);
                 }
-              } else if (c <= strokeTotal) {
+                isSolidCharRendered = true;
+              } else if (currentStrokeIndex < strokeTotal) {
                 // 后续格：拆解笔画
                 if (strokeTotal > 0 && canvas.createPath2D) {
-                  this.drawStrokesPath(canvas, ctx, strokes, c - 1, x, y, cellSize, '#cccccc');
+                  this.drawStrokesPath(canvas, ctx, strokes, currentStrokeIndex, x, y, cellSize, '#cccccc');
                 } else {
                   ctx.fillStyle = '#cccccc';
                   ctx.fillText(char, x + cellSize / 2, y + cellSize / 2);
                 }
+                currentStrokeIndex++;
               }
-            } else if (r >= 3 && r < 9) {
-              // 第4-9行（共6行）：描红
+            } else if (r >= actualBreakdownRows && r < actualBreakdownRows + traceRowsNeeded) {
+              // 描红区
               if (strokeTotal > 0 && canvas.createPath2D) {
                 this.drawStrokesPath(canvas, ctx, strokes, strokeTotal - 1, x, y, cellSize, '#cccccc');
               } else {
@@ -254,7 +267,7 @@ Page({
                 ctx.fillText(char, x + cellSize / 2, y + cellSize / 2);
               }
             } else {
-              // 第10-12行（共3行）：留白
+              // 留白区
               // 留白不需要绘制文字
             }
           }
