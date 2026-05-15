@@ -1,0 +1,294 @@
+/* 基础样式 */
+:root {
+    --primary-color: #1890ff;
+    --primary-hover: #40a9ff;
+    --text-color: #333;
+    --bg-color: #f5f5f5;
+    --border-color: #d9d9d9;
+    --grid-color: #000;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* 容器 */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    min-height: 100vh;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 28px;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+header p {
+    color: #666;
+    font-size: 14px;
+}
+
+/* 控制面板 */
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+#charInput {
+    padding: 10px 15px;
+    font-size: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    width: 250px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#charInput:focus {
+    border-color: var(--primary-color);
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--primary-hover);
+}
+
+.error-msg {
+    color: #ff4d4f;
+    margin-top: 10px;
+    font-size: 14px;
+    height: 20px;
+}
+
+/* 动画区域 */
+.animation-section {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.animation-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+#character-target {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.animation-controls {
+    margin-top: 15px;
+}
+
+/* 导出控制 */
+.export-controls {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.primary-btn {
+    background-color: #52c41a;
+    font-size: 18px;
+    padding: 12px 30px;
+}
+
+.primary-btn:hover {
+    background-color: #73d13d;
+}
+
+/* 字帖区域 (A4 尺寸设计) */
+.worksheet-container {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20mm 15mm;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.worksheet-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.worksheet-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    border-top: 1px solid var(--grid-color);
+    border-left: 1px solid var(--grid-color);
+}
+
+/* 大字示范区特殊样式 */
+.demo-area {
+    display: flex;
+    margin-bottom: 20px;
+    align-items: stretch;
+    border: 1px solid var(--grid-color);
+}
+
+.demo-cell-wrapper {
+    width: 45mm;
+    height: 45mm;
+    border-right: 1px solid var(--grid-color);
+}
+
+.demo-cell-wrapper .grid-cell {
+    width: 45mm;
+    height: 45mm;
+    border: none;
+}
+
+.demo-cell-wrapper .grid-text {
+    font-size: 36mm;
+}
+
+.demo-info {
+    flex: 1;
+    padding: 15px;
+    font-size: 18px;
+    font-family: "Kaiti", "STKaiti", "楷体", serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.demo-info span {
+    display: inline-block;
+    width: 60px;
+}
+
+/* 田字格行 */
+.grid-row {
+    display: flex;
+}
+
+/* 单个田字格 */
+.grid-cell {
+    width: 15mm;
+    height: 15mm;
+    border-right: 1px solid var(--grid-color);
+    border-bottom: 1px solid var(--grid-color);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* 田字格虚线 */
+.grid-cell::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 1px dashed var(--grid-color);
+    z-index: 1;
+}
+
+.grid-cell::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed var(--grid-color);
+    z-index: 1;
+}
+
+.grid-text {
+    font-family: "Kaiti", "STKaiti", "楷体", serif;
+    font-size: 12mm;
+    line-height: 1;
+    z-index: 2;
+    color: transparent;
+}
+
+.grid-text.solid {
+    color: #000; /* 示范字 */
+}
+
+.grid-text.trace {
+    color: #ccc; /* 描红字 */
+}
+
+.worksheet-footer {
+    text-align: center;
+    position: absolute;
+    bottom: 15mm;
+    left: 0;
+    right: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* 打印样式 */
+@media print {
+    .noprint {
+        display: none !important;
+    }
+    .worksheet-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        position: static;
+    }
+    body {
+        background-color: #fff;
+    }
+    @page {
+        size: A4;
+        margin: 20mm 15mm;
+    }
+}
