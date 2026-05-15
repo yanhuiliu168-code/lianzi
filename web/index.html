@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉字练字描红生成器</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入Hanzi Writer用于笔顺动画 -->
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <!-- 引入pinyin-pro用于汉字注音 -->
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.3/dist/index.js"></script>
+    <!-- 引入html2canvas和jspdf用于导出PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container noprint">
+        <header>
+            <h1>汉字练字描红生成器</h1>
+            <p>输入单个汉字，生成标准笔顺动画与田字格字帖</p>
+        </header>
+
+        <section class="control-panel">
+            <div class="input-group">
+                <input type="text" id="charInput" maxlength="1" placeholder="请输入单个汉字，例如：我" />
+                <button id="generateBtn">生成字帖</button>
+            </div>
+            <div id="errorMsg" class="error-msg"></div>
+        </section>
+
+        <section class="animation-section" id="animationSection" style="display: none;">
+            <h2>笔画顺序动画</h2>
+            <div id="character-target"></div>
+            <div class="animation-controls">
+                <button id="animateBtn">重新播放</button>
+            </div>
+        </section>
+        
+        <section class="export-controls" id="exportControls" style="display: none;">
+            <button id="exportPdfBtn" class="primary-btn">导出PDF并打印</button>
+        </section>
+    </div>
+
+    <!-- 字帖预览/导出区 (用于生成PDF) -->
+    <div class="worksheet-container" id="worksheetContainer" style="display: none;">
+        <div class="worksheet-header">
+            <span>姓名：__________</span>
+            <span>班级：__________</span>
+            <span>日期：__________</span>
+        </div>
+        <div class="worksheet-body" id="worksheetBody">
+            <!-- 动态生成田字格 -->
+        </div>
+        <div class="worksheet-footer">
+            <span>第 1 页</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

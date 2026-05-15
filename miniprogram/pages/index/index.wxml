@@ -1,0 +1,32 @@
+<view class="container">
+  <view class="header">
+    <text class="title">汉字练字描红生成器</text>
+    <text class="subtitle">输入单个汉字，生成标准笔顺动画与田字格字帖</text>
+  </view>
+
+  <view class="control-panel">
+    <view class="input-group">
+      <input class="char-input" type="text" maxlength="1" placeholder="请输入单个汉字" bindinput="onInputChange" value="{{inputValue}}" bindconfirm="generateWorksheet" />
+      <button class="generate-btn" bindtap="generateWorksheet">生成</button>
+    </view>
+    <view class="error-msg" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+  </view>
+
+  <view class="animation-section" wx:if="{{showResult}}">
+    <view class="section-title">笔画顺序动画</view>
+    <!-- 使用 web-view 或者 canvas 渲染 hanzi-writer -->
+    <!-- 由于原生小程序使用 hanzi-writer 比较复杂，推荐使用 mp-html 或者 canvas 原生绘制，这里提供一个基础的 canvas 容器 -->
+    <canvas canvas-id="writerCanvas" id="writerCanvas" class="writer-canvas"></canvas>
+    <button class="animate-btn" bindtap="animateCharacter">重新播放</button>
+  </view>
+
+  <view class="worksheet-section" wx:if="{{showResult}}">
+    <view class="section-title">字帖预览</view>
+    <!-- 提示用户保存图片 -->
+    <view class="tips">由于小程序端无法直接导出PDF，可保存高清字帖图片用于打印。</view>
+    <button class="export-btn" bindtap="saveWorksheet">保存字帖图片</button>
+    
+    <!-- 实际用于绘制字帖的离屏/隐藏 canvas -->
+    <canvas type="2d" id="worksheetCanvas" class="worksheet-canvas" style="width: 2100px; height: 2970px; position: fixed; left: 9999px;"></canvas>
+  </view>
+</view>
