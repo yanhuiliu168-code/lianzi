@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const animationSection = document.getElementById('animationSection');
     const animateBtn = document.getElementById('animateBtn');
     const exportControls = document.getElementById('exportControls');
+    const previewBtn = document.getElementById('previewBtn');
+    const previewModal = document.getElementById('previewModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
     const worksheetWrapper = document.getElementById('worksheetWrapper');
     const animPinyin = document.getElementById('animPinyin');
@@ -38,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // 隐藏旧的生成结果
             animationSection.style.display = 'none';
-            worksheetWrapper.style.display = 'none';
+            previewModal.style.display = 'none';
             exportControls.style.display = 'none';
             clearError();
         });
@@ -46,6 +50,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     generateBtn.addEventListener('click', handleGenerateSingle);
     generateArticleBtn.addEventListener('click', handleGenerateArticle);
+    
+    previewBtn.addEventListener('click', () => {
+        previewModal.style.display = 'flex';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        previewModal.style.display = 'none';
+    });
+
+    cancelPreviewBtn.addEventListener('click', () => {
+        previewModal.style.display = 'none';
+    });
+
+    // 点击模态框背景关闭
+    window.addEventListener('click', (e) => {
+        if (e.target === previewModal) {
+            previewModal.style.display = 'none';
+        }
+    });
     
     animateBtn.addEventListener('click', () => {
         if (writer) {
@@ -81,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 显示区域
         animationSection.style.display = 'block';
-        worksheetWrapper.style.display = 'block';
         exportControls.style.display = 'block';
 
         renderAnimation(currentChar);
@@ -102,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 文章模式不显示动画
         animationSection.style.display = 'none';
-        worksheetWrapper.style.display = 'block';
         exportControls.style.display = 'block';
 
         await renderArticleWorksheet(currentArticleText);

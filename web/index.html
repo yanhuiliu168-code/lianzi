@@ -49,13 +49,28 @@
         </section>
         
         <section class="export-controls" id="exportControls" style="display: none;">
-            <button id="exportPdfBtn" class="primary-btn">导出PDF并打印</button>
+            <button id="previewBtn" class="primary-btn" style="background-color: #1890ff;">预览字帖</button>
         </section>
     </div>
 
-    <!-- 字帖预览/导出区 (用于生成PDF) -->
-    <div id="worksheetWrapper" style="display: none;">
-        <!-- 动态生成田字格分页 -->
+    <!-- 字帖预览模态框 -->
+    <div id="previewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>字帖预览</h2>
+                <span class="close-btn" id="closeModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- 字帖预览/导出区 (用于生成PDF) -->
+                <div id="worksheetWrapper">
+                    <!-- 动态生成田字格分页 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelPreviewBtn" class="secondary-btn">取消</button>
+                <button id="exportPdfBtn" class="primary-btn">确认导出PDF并打印</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
