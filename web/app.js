@@ -308,7 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = text.split('\n');
         let formattedChars = [];
         const colsCount = 12;
-        const rowsCount = 12;
+        // 文章模式下，整页不需要示范大字，空间更充裕，可以放 16 行
+        const rowsCount = 16;
         const cellsPerPage = colsCount * rowsCount;
         
         for (let line of lines) {
