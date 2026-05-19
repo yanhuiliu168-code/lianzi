@@ -1,35 +1,67 @@
 document.addEventListener('DOMContentLoaded', () => {
     const charInput = document.getElementById('charInput');
     const generateBtn = document.getElementById('generateBtn');
+    const articleInput = document.getElementById('articleInput');
+    const generateArticleBtn = document.getElementById('generateArticleBtn');
+    
     const errorMsg = document.getElementById('errorMsg');
     const animationSection = document.getElementById('animationSection');
     const animateBtn = document.getElementById('animateBtn');
     const exportControls = document.getElementById('exportControls');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
-    const worksheetContainer = document.getElementById('worksheetContainer');
-    const worksheetBody = document.getElementById('worksheetBody');
+    const worksheetWrapper = document.getElementById('worksheetWrapper');
+    const animPinyin = document.getElementById('animPinyin');
+    const playAudioBtn = document.getElementById('playAudioBtn');
+    
+    const singleInputGroup = document.getElementById('singleInputGroup');
+    const articleInputGroup = document.getElementById('articleInputGroup');
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
 
     let writer = null;
     let currentChar = '';
+    let currentMode = 'single';
+    let currentArticleText = '';
 
     // 汉字校验正则
     const isChineseChar = (str) => /^[\u4e00-\u9fa5]$/.test(str);
 
-    generateBtn.addEventListener('click', handleGenerate);
+    // 模式切换
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            if (currentMode === 'single') {
+                singleInputGroup.style.display = 'flex';
+                articleInputGroup.style.display = 'none';
+            } else {
+                singleInputGroup.style.display = 'none';
+                articleInputGroup.style.display = 'flex';
+            }
+            // 隐藏旧的生成结果
+            animationSection.style.display = 'none';
+            worksheetWrapper.style.display = 'none';
+            exportControls.style.display = 'none';
+            clearError();
+        });
+    });
+
+    generateBtn.addEventListener('click', handleGenerateSingle);
+    generateArticleBtn.addEventListener('click', handleGenerateArticle);
+    
     animateBtn.addEventListener('click', () => {
         if (writer) {
             writer.animateCharacter();
         }
     });
+    
     exportPdfBtn.addEventListener('click', exportToPDF);
 
     charInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            handleGenerate();
+            handleGenerateSingle();
         }
     });
 
-    async function handleGenerate() {
+    async function handleGenerateSingle() {
         const val = charInput.value.trim();
         if (!val) {
             showError('请输入一个汉字');
@@ -49,11 +81,31 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 显示区域
         animationSection.style.display = 'block';
-        worksheetContainer.style.display = 'block';
+        worksheetWrapper.style.display = 'block';
         exportControls.style.display = 'block';
 
         renderAnimation(currentChar);
         await renderWorksheet(currentChar);
+    }
+
+    async function handleGenerateArticle() {
+        // 过滤非中文字符，可以保留常见标点，但为了铺满田字格全描红，可以保留全部或者只保留中文
+        // 需求：输入整篇文章也就是输入N多字，将这N多字以文章的开工铺满一张田字格
+        // 我们保留所有中文，非中文字符将被视为空白格跳过，或者直接用文本渲染
+        let val = articleInput.value.trim();
+        if (!val) {
+            showError('请输入文章内容');
+            return;
+        }
+        clearError();
+        currentArticleText = val;
+        
+        // 文章模式不显示动画
+        animationSection.style.display = 'none';
+        worksheetWrapper.style.display = 'block';
+        exportControls.style.display = 'block';
+
+        await renderArticleWorksheet(currentArticleText);
     }
 
     function showError(msg) {
@@ -68,6 +120,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = document.getElementById('character-target');
         target.innerHTML = ''; // 清空旧动画
         
+        // 渲染拼音
+        const pinyinStr = window.pinyinPro ? window.pinyinPro.pinyin(char) : '';
+        animPinyin.textContent = pinyinStr;
+        
+        // 发音功能
+        playAudioBtn.onclick = () => {
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(char);
+                msg.lang = 'zh-CN';
+                window.speechSynthesis.speak(msg);
+            } else {
+                alert('您的浏览器不支持语音播报');
+            }
+        };
+
         writer = HanziWriter.create('character-target', char, {
             width: 150,
             height: 150,
@@ -89,13 +156,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 return await res.json();
             }
         } catch (e) {
-            console.error('获取汉字数据失败', e);
+            // console.error('获取汉字数据失败', e);
         }
         return null;
     }
 
+    function buildPageElement(pageIndex, totalPages) {
+        const container = document.createElement('div');
+        container.className = 'worksheet-container';
+        
+        const header = document.createElement('div');
+        header.className = 'worksheet-header';
+        header.innerHTML = `<span>姓名：__________</span><span>班级：__________</span><span>日期：__________</span>`;
+        container.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'worksheet-body';
+        container.appendChild(body);
+
+        const footer = document.createElement('div');
+        footer.className = 'worksheet-footer';
+        footer.innerHTML = `<span>第 ${pageIndex + 1} 页 / 共 ${totalPages} 页</span>`;
+        container.appendChild(footer);
+
+        return { container, body };
+    }
+
     async function renderWorksheet(char) {
-        worksheetBody.innerHTML = '';
+        worksheetWrapper.innerHTML = '';
+        
+        const { container, body } = buildPageElement(0, 1);
+        worksheetWrapper.appendChild(container);
 
         const charData = await fetchCharData(char);
         const strokes = charData ? charData.strokes : [];
@@ -134,12 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         demoArea.appendChild(demoCellWrapper);
         demoArea.appendChild(demoInfo);
         
-        const worksheetParent = worksheetBody.parentNode;
-        const oldDemo = worksheetParent.querySelector('.demo-area');
-        if (oldDemo) {
-            worksheetParent.removeChild(oldDemo);
-        }
-        worksheetParent.insertBefore(demoArea, worksheetBody);
+        container.insertBefore(demoArea, body);
 
         // 2. 描红区排版
         const rowsCount = 12;
@@ -147,63 +233,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 计算笔顺拆解需要的总格数（1个实心字 + 所有笔画拆解）
         const breakdownTotalCells = 1 + strokeTotal;
-        // 计算笔顺拆解需要占用多少行（向上取整）
         const breakdownRowsNeeded = Math.ceil(breakdownTotalCells / colsCount);
-        // 限制最多占用所有行，通常不会超过3行
         const actualBreakdownRows = Math.min(breakdownRowsNeeded, rowsCount);
 
-        // 记录当前渲染到第几个笔画
         let currentStrokeIndex = 0;
         let isSolidCharRendered = false;
 
-        // 渲染笔顺拆解行
         for (let r = 0; r < actualBreakdownRows; r++) {
             const row = document.createElement('div');
             row.className = 'grid-row';
             
             for (let c = 0; c < colsCount; c++) {
                 if (!isSolidCharRendered) {
-                    // 第一格：完整实心字
                     row.appendChild(createGridCell(char, 'solid', strokes, strokeTotal - 1));
                     isSolidCharRendered = true;
                 } else if (currentStrokeIndex < strokeTotal) {
-                    // 后续格子：逐步增加笔画
                     row.appendChild(createGridCell(char, 'stroke-breakdown', strokes, currentStrokeIndex));
                     currentStrokeIndex++;
                 } else {
-                    // 补充空白格
                     row.appendChild(createGridCell('', 'empty'));
                 }
             }
-            worksheetBody.appendChild(row);
+            body.appendChild(row);
         }
 
-        // 计算剩余行数
         const remainingRows = rowsCount - actualBreakdownRows;
-        // 将剩余行数分配给“描红行”和“留白行”
-        // 原逻辑是 6行描红，3行留白（比例大概 2:1）
-        // 这里动态分配：剩余行数的前 2/3 给描红，后 1/3 留白
         const traceRowsNeeded = Math.ceil(remainingRows * (6 / 9));
         const emptyRowsNeeded = remainingRows - traceRowsNeeded;
 
-        // 渲染描红行
         for (let r = 0; r < traceRowsNeeded; r++) {
             const row = document.createElement('div');
             row.className = 'grid-row';
             for (let j = 0; j < colsCount; j++) {
                 row.appendChild(createGridCell(char, 'trace', strokes, strokeTotal - 1));
             }
-            worksheetBody.appendChild(row);
+            body.appendChild(row);
         }
 
-        // 渲染留白行
         for (let r = 0; r < emptyRowsNeeded; r++) {
             const row = document.createElement('div');
             row.className = 'grid-row';
             for (let j = 0; j < colsCount; j++) {
                 row.appendChild(createGridCell('', 'empty'));
             }
-            worksheetBody.appendChild(row);
+            body.appendChild(row);
+        }
+    }
+
+    async function renderArticleWorksheet(text) {
+        worksheetWrapper.innerHTML = '';
+        
+        // 简单处理排版，保留换行符
+        const lines = text.split('\n');
+        let formattedChars = [];
+        const colsCount = 12;
+        const rowsCount = 12;
+        const cellsPerPage = colsCount * rowsCount;
+        
+        for (let line of lines) {
+            for (let char of line) {
+                formattedChars.push(char);
+            }
+            // 补齐一行的空白
+            const remainder = formattedChars.length % colsCount;
+            if (remainder !== 0) {
+                const padding = colsCount - remainder;
+                for(let i=0; i<padding; i++) {
+                    formattedChars.push('');
+                }
+            }
+        }
+        
+        const totalPages = Math.max(1, Math.ceil(formattedChars.length / cellsPerPage));
+        
+        for (let p = 0; p < totalPages; p++) {
+            const { container, body } = buildPageElement(p, totalPages);
+            worksheetWrapper.appendChild(container);
+            
+            for (let r = 0; r < rowsCount; r++) {
+                const row = document.createElement('div');
+                row.className = 'grid-row';
+                for (let c = 0; c < colsCount; c++) {
+                    const idx = p * cellsPerPage + r * colsCount + c;
+                    const char = formattedChars[idx];
+                    
+                    if (char && isChineseChar(char)) {
+                        row.appendChild(createGridCell(char, 'trace'));
+                    } else if (char && !isChineseChar(char)) {
+                        // 标点符号等非中文字符，直接用文本显示
+                        row.appendChild(createGridCell(char, 'solid'));
+                    } else {
+                        row.appendChild(createGridCell('', 'empty'));
+                    }
+                }
+                body.appendChild(row);
+            }
         }
     }
 
@@ -240,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const svg = createSvgChar(strokes, maxIndex, color);
                 cell.appendChild(svg);
             } else {
-                // 降级使用文本
+                // 降级使用文本（文章模式描红使用该方式，性能更好）
                 const text = document.createElement('div');
                 text.className = `grid-text ${type}`;
                 text.textContent = char;
@@ -258,18 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
 
         try {
-            const element = document.getElementById('worksheetContainer');
-            
-            // 为了保证清晰度，调整scale
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight
-            });
-
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pages = document.querySelectorAll('.worksheet-container');
+            if (!pages.length) return;
             
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({
@@ -278,11 +392,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 format: 'a4'
             });
 
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            for (let i = 0; i < pages.length; i++) {
+                if (i > 0) {
+                    pdf.addPage();
+                }
+                
+                const element = pages[i];
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    windowWidth: element.scrollWidth,
+                    windowHeight: element.scrollHeight
+                });
 
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`汉字字帖-${currentChar}.pdf`);
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+            
+            const fileName = currentMode === 'single' ? `汉字字帖-${currentChar}.pdf` : `文章字帖.pdf`;
+            pdf.save(fileName);
         } catch (error) {
             console.error('导出PDF失败:', error);
             alert('导出PDF失败，请重试');
