@@ -1,7 +1,7 @@
 <view class="container">
   <view class="header">
-    <text class="title">汉字练字描红生成器</text>
-    <text class="subtitle">输入单个汉字，生成标准笔顺动画与田字格字帖</text>
+    <text class="title">田字格智能练字</text>
+    <text class="subtitle">支持单字笔顺练习（小程序端目前主要提供单字高清生成，文章模式建议在网页端体验）</text>
   </view>
 
   <view class="control-panel">

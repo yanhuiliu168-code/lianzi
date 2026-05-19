@@ -125,6 +125,57 @@ button:hover {
     margin-top: 15px;
 }
 
+.mode-selector {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    font-size: 16px;
+}
+.mode-selector label {
+    cursor: pointer;
+}
+#articleInputGroup {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    gap: 15px;
+}
+#articleInput {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+}
+#articleInput:focus {
+    border-color: var(--primary-color);
+}
+.pinyin-display {
+    margin-bottom: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+#playAudioBtn {
+    font-size: 14px;
+    padding: 5px 12px;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#playAudioBtn:hover {
+    background-color: #f0f0f0;
+}
+
 /* 导出控制 */
 .export-controls {
     text-align: center;
@@ -277,12 +328,20 @@ button:hover {
     .noprint {
         display: none !important;
     }
+    #worksheetWrapper {
+        width: 100%;
+        display: block !important;
+    }
     .worksheet-container {
         box-shadow: none;
         margin: 0;
         padding: 0;
         width: 100%;
         position: static;
+        page-break-after: always;
+    }
+    .worksheet-container:last-child {
+        page-break-after: auto;
     }
     body {
         background-color: #fff;
